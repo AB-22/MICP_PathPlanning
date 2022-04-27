@@ -4,6 +4,7 @@ function plot_results(num_of_steps,cpu_time_avg,err_cpu_time,num_of_vars_avg,err
 
 figure('Color', 'w', 'Name', 'cpu time');
 
+
 for i=1:length(gap_values)
 % Draw error bars (cpu_time)
 
@@ -12,14 +13,14 @@ for i=1:length(gap_values)
 
     
     if i==1
-        plot(x,y,'ro-','DisplayName',['gap=' num2str(gap_values(i))])
+        h1(i) = semilogy(x,y,'LineWidth', 1.5, 'Color', 'r', 'LineStyle', '-');
     elseif i==2
-        plot(x,y,'bo-','DisplayName',['gap=' num2str(gap_values(i))])
+        h1(i) = semilogy(x,y,'LineWidth', 3, 'Color', 'b', 'LineStyle', ':');
     else
-        plot(x,y,'go-','DisplayName',['gap=' num2str(gap_values(i))])
+        h1(i) = semilogy(x,y,'LineWidth', 2, 'Color', 'k', 'LineStyle', '--');
     end
     hold on;
-    errorbar(x,y,err_cpu_time(:,i),'LineStyle','none', 'Color', 'k','linewidth', 1.2,'DisplayName','Error')
+    errorbar(x,y,err_cpu_time(:,i),'LineStyle','none', 'Color', 'k','linewidth', 2.2,'DisplayName','Error')
     ax = gca;
     ax.GridAlpha = 0.6;
     ax.LineWidth = 0.5;
@@ -27,17 +28,17 @@ for i=1:length(gap_values)
     ax.MinorGridAlpha = 0.2;
     ax.FontName = 'Tibetan Machine Uni';
     ax.FontSize = 18;
-    xlabel_handle = xlabel('$$\#steps$$');
+    xlabel_handle = xlabel('number of steps');
     xlabel_handle.Interpreter = 'latex';
-    ylabel_handle = ylabel('$$cpu time$$(s)');
+    ylabel_handle = ylabel('cpu time (s)');
     ylabel_handle.Interpreter = 'latex';
     grid on;
     grid minor;
     drawnow;
     %axis equal;
 end
-lgd = legend('show');
-lgd.FontSize = 8;
+lgd = legend(h1(1:3),'gap = 0.05','gap = 0.02', 'gap = 0.005');
+lgd.FontSize = 14;
 lgd.Location='northwest';
 
 % Plot number of variables
@@ -55,14 +56,14 @@ for i=1:length(gap_values)
 
 
     if i==1
-        plot(x,y,'ro-','DisplayName',['gap=' num2str(gap_values(i))])
+        h2(i) = semilogy(x,y,'LineWidth', 1.5, 'Color', 'r', 'LineStyle', '-');
     elseif i==2
-        plot(x,y,'bo-','DisplayName',['gap=' num2str(gap_values(i))])
+        h2(i) = semilogy(x,y,'LineWidth', 3, 'Color', 'b', 'LineStyle', ':');
     else
-        plot(x,y,'go-','DisplayName',['gap=' num2str(gap_values(i))])
+        h2(i) = semilogy(x,y,'LineWidth', 2, 'Color', 'k', 'LineStyle', '--');
     end
     hold on;
-    errorbar(x,y,err_num_of_vars(:,i),'LineStyle','none', 'Color', 'k','linewidth', 1.2,'DisplayName','Error')
+    errorbar(x,y,err_num_of_vars(:,i),'LineStyle','none', 'Color', 'k','linewidth', 2.2,'DisplayName','Error')
     ax = gca;
     ax.GridAlpha = 0.6;
     ax.LineWidth = 0.5;
@@ -70,17 +71,17 @@ for i=1:length(gap_values)
     ax.MinorGridAlpha = 0.2;
     ax.FontName = 'Tibetan Machine Uni';
     ax.FontSize = 18;
-    xlabel_handle = xlabel('$$\#steps$$');
+    xlabel_handle = xlabel('number of steps');
     xlabel_handle.Interpreter = 'latex';
-    ylabel_handle = ylabel('$$\#variables$$');
+    ylabel_handle = ylabel('number of variables');
     ylabel_handle.Interpreter = 'latex';
     grid on;
     grid minor;
     drawnow;
     %axis equal;
 end
-lgd = legend('show');
-lgd.FontSize = 8;
+lgd = legend(h2(1:3),'gap = 0.05','gap = 0.02', 'gap = 0.005');
+lgd.FontSize = 14;
 lgd.Location='northwest';
 % Plot Iterations
 figure('Color', 'w', 'Name', 'Number of Iterations');
@@ -96,14 +97,14 @@ for i=1:length(gap_values)
     % ylabel('$$number of Iterations$$', 'Interpreter', 'latex');
 
     if i==1
-        plot(x,y,'ro-','DisplayName',['gap=' num2str(gap_values(i))])
+        h3(i) = semilogy(x,y,'LineWidth', 1.5, 'Color', 'r', 'LineStyle', '-');
     elseif i==2
-        plot(x,y,'bo-','DisplayName',['gap=' num2str(gap_values(i))])
+        h3(i) = semilogy(x,y,'LineWidth', 3, 'Color', 'b', 'LineStyle', ':');
     else
-        plot(x,y,'go-','DisplayName',['gap=' num2str(gap_values(i))])
+        h3(i) = semilogy(x,y,'LineWidth', 2, 'Color', 'k', 'LineStyle', '--');
     end
     hold on;
-    errorbar(x,y,err_num_of_iters(:,i),'LineStyle','none', 'Color', 'k','linewidth', 1.2,'DisplayName','Error')
+    errorbar(x,y,err_num_of_iters(:,i),'LineStyle','none', 'Color', 'k','linewidth', 2.2,'DisplayName','Error')
     ax = gca;
     ax.GridAlpha = 0.6;
     ax.LineWidth = 0.5;
@@ -111,9 +112,9 @@ for i=1:length(gap_values)
     ax.MinorGridAlpha = 0.2;
     ax.FontName = 'Tibetan Machine Uni';
     ax.FontSize = 18;
-    xlabel_handle = xlabel('$$\#steps$$');
+    xlabel_handle = xlabel('number of steps');
     xlabel_handle.Interpreter = 'latex';
-    ylabel_handle = ylabel('$$\#Iterations$$');
+    ylabel_handle = ylabel('number of iterations');
     ylabel_handle.Interpreter = 'latex';
     grid on;
     grid minor;
@@ -121,7 +122,7 @@ for i=1:length(gap_values)
 
     % %axis equal;
 end
-lgd = legend('show');
-lgd.FontSize = 8;
+lgd = legend(h3(1:3),'gap = 0.05','gap = 0.02', 'gap = 0.005');
+lgd.FontSize = 14;
 lgd.Location='northwest';
 end

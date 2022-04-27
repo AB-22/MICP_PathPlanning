@@ -1,4 +1,4 @@
-clear all;
+clear;
 close all;
 clc
 
@@ -14,7 +14,8 @@ exp_name='data_maze_3Rooms_2Corridors_6bars_Final'; % Experiment name
 
 for i=1:length(gap_values)
     gap_val=gap_values(i);
-    exp_title=['Folder_' exp_name '\' exp_name '_gapValue(' num2str(gap_val) ')\'];
+%     exp_title=['Folder_' exp_name '\' exp_name '_gapValue(' num2str(gap_val) ')\'];
+    exp_title=['Folder_' exp_name '/' exp_name '_gapValue(' num2str(gap_val) ')/'];
     for j=1:length(steps_values)
         number_of_steps=steps_values(j); % number of the steps taken by the drone from start to finish point
             
@@ -23,7 +24,7 @@ for i=1:length(gap_values)
          for k=1:num_of_exps
                 exp_num=k;
                 if number_of_steps<=18 || gap_val~=0.005
-                    exp_names(k,j,i)=convertCharsToStrings([exp_title exp_order ')\iteration_' num2str(exp_num) '_Outputs.mat']);
+                    exp_names(k,j,i)=convertCharsToStrings([exp_title exp_order ')/iteration_' num2str(exp_num) '_Outputs.mat']);
                 else
                     exp_names(k,j,i)="";
 
