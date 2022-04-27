@@ -1,0 +1,218 @@
+% ### Description ###
+%{
+This Main.m file is used to generate the results of a new experiment
+OR to plot the results of a previous experiment In the plot section
+(just change the exp_name and your other parameters), or you can show the plots of a presaved (file.mat) of results
+in the section of plotting beneath.
+ Each exp_name refers to a folder that will be created and all results can
+ be found in that folder.
+%}
+
+
+%{
+ You can use the section of generating new Configurations to generate
+ Drone configurations within specified number of configurations and a name
+ for the generated dataset of configurations.
+
+However, there is a pre-stored datasets you can load and use in the solving
+section.
+%}
+
+
+%{
+    For the Solving section, You put the name of the experiment
+    then enter the name of the Drone Configurations dataset that you wish
+    to load from the Configs folder.
+
+
+%}
+
+%NOTE: these has to be on top
+clear;
+close all;
+clc;
+
+%% Generate Drone Configurations Dataset
+   % ( this is just optional, in case you want to generate new dataset)
+n=3; % 3D case
+num_of_configs=5; % Number of Configurations
+num_of_drone_vertices=8; % Number of Drone vertices (Initial suggestion)
+config_name='Drone_8vertices_75configs'; % Name of the configurations dataset
+
+% Calling the function that generates the required number of bounded random-sized configurations 
+configs=Generate_configurations(n, num_of_configs, num_of_drone_vertices ,config_name);
+  
+
+%% Solving Section and save the results in the corresponding folder
+
+
+exp_name='data_maze_3Rooms_2Corridors'; % Experiment name
+config_name='Drone_8vertices_75configs'; % The name of the configuratons dataset you want to load
+load(['Configs_Folder\' config_name '.mat']);
+number_of_regions=5; % the number of the convex regions (including rooms and corridors)
+T_cubes=zeros(3,3,number_of_regions); %T_cubes is 3x3xnumber_of_cubes(rooms&corridors) it express the convex regions
+
+%{
+ if you want to change the number_of_regions you should  edit Generate_inputs function.
+Then edit the plot section for presenting the new number of rooms.
+%}
+cubes_centers=zeros(3,1,number_of_regions); % Here we initate the cubes_center for generating the rooms
+
+mkdir (['Folder_' exp_name]); % Create a new folder for the Our experiment
+
+
+T_cubes(:,:,1) = [4 0 3;0 5 0;0 2 6];
+cubes_centers(:,:,1)=[3.5;0; 0];
+
+T_cubes(:,:,2) = [8 0 0.5;2 1.5 0;0 0 1.5];
+cubes_centers(:,:,2)=[9.25;0; 0];
+
+T_cubes(:,:,3)= [4 0 2;1 5 0;0 2 6];
+cubes_centers(:,:,3)=[19;0; 0];
+
+T_cubes(:,:,4)= [8 0 -2;0 1.5 0;-2 0 1.5];
+cubes_centers(:,:,4)=[28.75;0; 0];
+
+T_cubes(:,:,5)= [4 1 0;-2 5 0;0 0 6];
+cubes_centers(:,:,5)=[37;0; 0];  % Here is the end of 5 convex regions, if more we should add as commented below
+
+% T_cubes(:,:,6) = [8 -2 0;0 1.5 0;1 0 1.5];
+% cubes_centers(:,:,6)=[48.25;0; 0];
+% 
+% T_cubes(:,:,7) = [4 0 3;0 5 0;2 0 6];
+% cubes_centers(:,:,7)=[55.5;0; 0];
+% 
+% T_cubes(:,:,8)= [8 0 3;2 1.5 0;0 0 1.5];
+% cubes_centers(:,:,8)=[66.5;0; 0];
+% 
+% T_cubes(:,:,9)= [4 0 0.5;0 5 -2;0 0 6];
+% cubes_centers(:,:,9)=[77.5;0; 0];
+% 
+% T_cubes(:,:,10)= [8 0 2;0 1.5 0;-0.5 0 1.5];
+% cubes_centers(:,:,10)=[86.5;0; 0];
+% 
+% T_cubes(:,:,11)= [4 2 0;0 5 0;4 0 6];
+% cubes_centers(:,:,11)=[97.5;0; 0];
+
+
+
+%{
+Generating the inputs file that produces the convex regions from the
+vertices to h-polytop presentation.
+
+The Inputs.mat file will be generated inside the experiment folder.
+that file includes V-presentation in struct 'maze' for the convex regions
+and H-presentation of the convex regions and their intersections.'
+
+This function should be edited if we changed the number of convex regions.
+%}
+inputs= Generate_inputs(exp_name,T_cubes,cubes_centers); 
+
+% Planning steps,start and finish points
+number_of_steps=25; % number of the steps taken by the drone from start to finish point 
+start=sum(inputs.maze.V1,2)/size(inputs.maze.V1,2); % start point is at the center of the 1st room
+finish=sum(inputs.maze.V5,2)/size(inputs.maze.V5,2);% finish point is at the center of the 2nd corridor
+
+% Parameters of the mixed integer program
+weight_goal=20; % the weight of the goal in the objective function
+bigM=30;       % big M for the mixed integer program
+
+
+%{
+Generate_outputs() is a function that takes pregenerated Inputs , start/finish points
+ , Drone Configurations dataset, experiment name, bigM, goal weight, number
+ of steps, number of convex regions.
+
+Then, in this function we solve our optimiztion problem (which is described
+inside the function) and save the results in 'Outputs.mat' saved in the
+folder of the experiment.
+
+Inside the function, you can see commented lines of code, like when getting
+the values of H-presentation of the convex regions, those commented lines
+are for facilating the process of adding more rooms, because we have to
+edit the function there.
+%}
+outputs=Generate_outputs(exp_name,inputs,number_of_regions,start,finish,...
+    number_of_steps,weight_goal,bigM,configs);
+
+
+
+%% We plot how our Mixed integer program planned the path inside the convex
+%regions subject to the previous conditions.
+
+exp_name='data_maze_3Rooms_2Corridors';
+
+load(['Folder_' exp_name '\' exp_name '_Outputs.mat']);
+
+%load('Folder_data_maze_5Rooms_75config_25steps_finish5(g)\data_maze_5Rooms_75config_25steps_finish5(g)_Outputs_parameterValue(75).mat')
+
+x=outputs.x;
+V1=outputs.path.maze.V1;
+V2=outputs.path.maze.V2;
+V3=outputs.path.maze.V3;
+V4=outputs.path.maze.V4;
+V5=outputs.path.maze.V5;
+% V6=outputs.path.maze.V6;
+% V7=outputs.path.maze.V7;
+% V8=outputs.path.maze.V8;
+% V9=outputs.path.maze.V9;
+% V10=outputs.path.maze.V10;
+% V11=outputs.path.maze.V11;
+start=outputs.path.start;
+finish=outputs.path.finish;
+number_of_steps=outputs.path.number_of_steps;
+config_array=outputs.Drone.config_array;
+num_of_configs=outputs.Drone.num_of_configs;
+num_of_drone_vertices=outputs.Drone.num_of_drone_vertices;
+s=outputs.s;
+figure();
+% Plot the steps and the three objects in 3D plot
+plot3((x(1,:))',(x(2,:))',(x(3,:))','o','MarkerEdgeColor','k','MarkerSize',6,...
+'LineWidth',2); hold on;
+plot3(start(1),start(2),start(3),'s','MarkerEdgeColor','g','MarkerSize',10,...
+'LineWidth',2); hold on;
+plot3(finish(1),finish(2),finish(3),'s','MarkerEdgeColor','r','MarkerSize',6,...
+'LineWidth',2); hold on;
+
+[~, in] = max(s);
+for k=1:number_of_steps
+    for j = 1:num_of_drone_vertices
+        plot3(x(1,k) + config_array(1, j, in(k)), ...
+              x(2,k) + config_array(2, j, in(k)), ...
+              x(3,k) + config_array(3, j, in(k)), ...
+              '*','MarkerEdgeColor','r','MarkerSize',2,...
+            'LineWidth',2); hold on;
+
+        
+    end
+end
+
+%figure('Color', 'w')
+vis_Body(V1, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'b'); hold on;
+vis_Body(V2, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'c'); 
+vis_Body(V3, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'b');
+vis_Body(V4, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'c'); 
+vis_Body(V5, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'b');
+% vis_Body(V6, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'c'); 
+% vis_Body(V7, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'b');
+% vis_Body(V8, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'c'); 
+% vis_Body(V9, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'b');
+% vis_Body(V10, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'c'); 
+% vis_Body(V11, 'FaceAlpha', 0.4, 'EdgeAlpha', 0.05, 'FaceColor', 'b');
+
+
+
+
+% drawPolyFromVertices(V1,'b','FaceColor','b','FaceAlpha',.3,'EdgeAlpha',.3);
+% hold on;
+% drawPolyFromVertices(V2,'g','FaceColor','g','FaceAlpha',.3,'EdgeAlpha',.3);
+% hold on;
+% drawPolyFromVertices(V3,'r','FaceColor','r','FaceAlpha',.3,'EdgeAlpha',.3);
+% hold on;
+% Here is the plot of the configurations ( the marker of its vertices is  '^')
+%fill3(P(1,:,1),P(2,:,1),P(3,:,1),'k-^', 'FaceAlpha', 1,'EdgeAlpha',.3);
+% % % for i=1:num_of_configs
+% % %     fill3(P(1,:,i),P(2,:,i),P(3,:,i),'k-^', 'FaceAlpha', 1,'EdgeAlpha',.3);
+% % % end
+
+axis equal
